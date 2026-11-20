@@ -1,0 +1,29 @@
+name: Post to Instagram and Facebook
+on:
+  schedule:
+    - cron: "17 6 * * 1,3,5"   # Mon, Wed, Fri 09:17 Nairobi
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Queue date to post now (e.g. 2026-11-23). Leave empty for next due post."
+        required: false
+permissions:
+  contents: write
+concurrency: posting
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm install --no-audit --no-fund
+      - run: pip install playwright
+      - run: python publish.py
+        env:
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          FB_PAGE_ID: "1164710393397052"
+          IG_USER_ID: "17841452067077514"
+          FORCE_POST: ${{ inputs.date }}
